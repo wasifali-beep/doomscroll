@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="ur-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Seekho</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF1EC; --ink:#10302E; --soft:#4C6B67; --card:#FFFFFF; --line:#C9DAD2;
+  --accent:#E8A317; --accent-ink:#2A1C00; --good:#1F7A4D; --bad:#B23A2E;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0D2624; --ink:#EAF3EE; --soft:#9DB8B2; --card:#143331; --line:#24504C;
+    --accent:#F2B134; --good:#5BC98D; --bad:#F07B6E; color-scheme:dark; }
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif;
+  display:flex;flex-direction:column;overflow:hidden;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+h1,h2,h3,.logo,.go,.big{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+
+header{display:flex;align-items:center;gap:6px;padding:10px 14px;border-bottom:1px solid var(--line);flex:none}
+.logo{font-weight:800;font-size:22px;letter-spacing:-.02em;background:none;border:0;padding:0 6px 0 4px;margin-right:auto}
+.meter{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--soft);margin-right:6px}
+.bar{width:70px;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.icon{background:none;border:0;font-size:20px;padding:6px 7px;color:var(--soft);border-radius:10px}
+.icon[aria-current="page"]{background:var(--line);color:var(--ink)}
+
+main{flex:1;min-height:0;position:relative}
+.page{height:100%;overflow:auto;padding:24px 20px 48px;max-width:560px;margin:0 auto}
+.page h1{font-size:clamp(30px,8vw,48px);line-height:1.02;letter-spacing:-.03em;margin:4px 0 12px}
+.page > p{color:var(--soft);margin:0 0 22px}
+fieldset{border:0;padding:0;margin:0 0 20px}
+legend{font-weight:700;margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:transparent;padding:8px 13px;border-radius:999px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cwrap{display:inline-flex;align-items:center}
+.cwrap .x{border:0;background:none;color:var(--soft);padding:4px 6px;font-size:18px;line-height:1}
+.addrow{display:flex;gap:8px;margin-top:10px}
+.addrow input{flex:1;min-width:0;padding:10px 12px;border:2px solid var(--line);border-radius:12px;background:var(--card)}
+.addrow button{padding:0 14px;border:2px solid var(--ink);border-radius:12px;background:transparent;font-weight:700}
+.go{display:block;width:100%;margin-top:8px;padding:15px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:20px}
+.go.alt{background:transparent;color:var(--ink);border:2px solid var(--ink);font-size:18px;margin-top:10px}
+.go:disabled{opacity:.45}
+.due{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:14px 16px;margin:0 0 22px;border:2px solid var(--accent);border-radius:14px;background:color-mix(in srgb,var(--accent) 12%,transparent);text-align:left}
+.due b{font-size:18px}
+.stats{margin-top:16px;font-size:15px;color:var(--soft)}
+.note{margin-top:12px;font-size:15px;color:var(--bad)}
+label.f{display:block;font-weight:700;margin:0 0 6px}
+.input{width:100%;padding:12px;border:2px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:6px}
+.help{font-size:14px;color:var(--soft);margin:0 0 18px}
+.sec{border-top:1px solid var(--line);margin-top:26px;padding-top:20px}
+.sec h2{font-size:22px;margin:0 0 12px}
+.toggle{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.toggle input{width:22px;height:22px;accent-color:var(--accent)}
+.okmsg{font-size:15px;color:var(--good);margin-top:10px}
+
+/* feed */
+#feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain}
+.slide{height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:16px}
+.card{width:100%;max-width:520px;max-height:100%;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px 22px}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.tag{font-size:13px;color:var(--soft)}
+.tag.review{color:var(--accent);font-weight:700}
+.star{border:0;background:none;font-size:24px;line-height:1;padding:2px 4px;color:var(--soft)}
+.star[aria-pressed="true"]{color:var(--accent)}
+.card h2{font-size:clamp(26px,7vw,36px);line-height:1.05;letter-spacing:-.025em;margin:0 0 14px}
+.body{margin:0 0 14px}
+.ex{border-left:4px solid var(--accent);padding:4px 0 4px 14px;margin:0 0 14px;color:var(--soft)}
+.ex b{color:var(--ink)}
+.take{font-weight:700;margin:0 0 16px}
+.acts{display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--line);padding-top:12px}
+.act{border:1.5px solid var(--line);background:transparent;padding:6px 11px;border-radius:999px;font-size:14px}
+.act.on{border-color:var(--accent)}
+.hint{text-align:center;color:var(--soft);font-size:13px;margin-top:12px}
+.opt{display:block;width:100%;text-align:left;margin:0 0 10px;padding:13px 14px;border:2px solid var(--line);border-radius:12px;background:transparent}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent)}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.why{margin-top:6px;color:var(--soft)}
+.loading .card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:240px;color:var(--soft);text-align:center}
+.dots::after{content:"";animation:d 1.2s steps(4) infinite}
+@keyframes d{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.ghost{padding:11px 16px;border-radius:12px;border:2px solid var(--line);background:transparent}
+
+/* saved list */
+.stack .card{margin:0 0 14px;max-height:none}
+.empty{color:var(--soft);padding:30px 0}
+
+/* stats */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.tile .big{font-size:32px;font-weight:800;line-height:1;letter-spacing:-.02em}
+.tile span{display:block;font-size:14px;color:var(--soft);margin-top:6px}
+.week{display:flex;align-items:flex-end;gap:8px;height:150px;padding:0 2px;margin-bottom:6px}
+.week div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;font-size:12px;color:var(--soft)}
+.week i{display:block;width:100%;border-radius:6px 6px 2px 2px;background:var(--accent);min-height:3px}
+.week .today i{background:var(--ink)}
+.trow{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+
+/* sheet */
+#scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-height:82%;display:flex;flex-direction:column;
+  background:var(--card);border-radius:22px 22px 0 0;border-top:1px solid var(--line);
+  padding:10px 20px calc(16px + env(safe-area-inset-bottom,0px))}
+#sheet .grab{width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 12px}
+.shead{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+#sheet h3{margin:0 0 4px;font-size:20px}
+#sheet .sub{color:var(--soft);font-size:14px;margin:0 0 10px}
+#sheetOut{overflow:auto;white-space:pre-wrap;flex:1;min-height:60px}
+.ask{display:flex;gap:8px;margin-top:12px}
+.ask input{flex:1;min-width:0;padding:11px;border:2px solid var(--line);border-radius:12px;background:var(--bg)}
+.ask button{padding:0 16px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:700}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;z-index:30;font-size:15px}
+@media (prefers-reduced-motion:reduce){.dots::after{animation:none;content:"..."}.bar i{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <button class="logo" id="homeBtn">seekho</button>
+  <div class="meter" id="meter" hidden><span id="count"></span><div class="bar" aria-hidden="true"><i id="fill"></i></div></div>
+  <button class="icon" data-nav="saved" aria-label="Saved cards">★</button>
+  <button class="icon" data-nav="stats" aria-label="Stats">📊</button>
+  <button class="icon" data-nav="settings" aria-label="Settings">⚙︎</button>
+</header>
+
+<main>
+  <!-- HOME -->
+  <section class="page" id="home">
+    <button class="due" id="dueBtn" hidden><span><b id="dueN"></b><br><span id="dueSub">Dohrao, warna bhool jaoge</span></span><span aria-hidden="true">›</span></button>
+    <h1>Scroll ki aadat. Lekin seekhne ke liye.</h1>
+    <p>Har card ek concept. Roman Urdu, English terms ke saath. Goal pura, feed band.</p>
+    <fieldset>
+      <legend>Topics</legend>
+      <div class="chips" id="topics"></div>
+      <form class="addrow" id="addTopic">
+        <input id="topicIn" placeholder="Apna topic (jaise Docker, Kafka)" autocomplete="off" maxlength="60">
+        <button>Add</button>
+      </form>
+    </fieldset>
+    <fieldset>
+      <legend>Level</legend>
+      <div class="chips" id="level">
+        <button class="chip" data-v="Beginner">Beginner</button>
+        <button class="chip" data-v="Intermediate">Intermediate</button>
+        <button class="chip" data-v="Advanced">Advanced</button>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Aaj kitne cards?</legend>
+      <div class="chips" id="goal">
+        <button class="chip" data-v="5">5</button>
+        <button class="chip" data-v="10">10</button>
+        <button class="chip" data-v="20">20</button>
+      </div>
+    </fieldset>
+    <button class="go" id="start">Shuru karo</button>
+    <button class="go alt" id="testBtn">Mera test lo</button>
+    <div class="stats" id="homeStats"></div>
+    <div class="note" id="note" hidden></div>
+  </section>
+
+  <!-- SAVED -->
+  <section class="page" id="saved" hidden>
+    <h1>Saved</h1>
+    <div class="stack" id="savedList"></div>
+  </section>
+
+  <!-- STATS -->
+  <section class="page" id="stats" hidden>
+    <h1>Stats</h1>
+    <div class="grid" id="tiles"></div>
+    <h3>Pichle 7 din (cards)</h3>
+    <div class="week" id="week"></div>
+    <div class="sec"><h2>Topics</h2><div id="topicStats"></div></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="page" id="settings" hidden>
+    <h1>Settings</h1>
+    <label class="f" for="prov">AI provider</label>
+    <select class="input" id="prov">
+      <option value="claude">Anthropic Claude</option>
+      <option value="gemini">Google Gemini (free tier)</option>
+    </select>
+    <p class="help" id="provHelp"></p>
+    <label class="f" for="key">API key</label>
+    <input class="input" id="key" type="password" autocomplete="off" spellcheck="false" placeholder="Key paste karo">
+    <p class="help">Key sirf is phone pe rehti hai. Kisi ko mat do.</p>
+    <label class="f" for="model">Model</label>
+    <input class="input" id="model" spellcheck="false">
+    <p class="help">Error aaye to model naam check karo.</p>
+    <button class="go" id="saveAi">Save karo</button>
+    <div class="okmsg" id="aiOk" hidden>Saved.</div>
+
+    <div class="sec">
+      <h2>Daily reminder</h2>
+      <label class="toggle"><input type="checkbox" id="remOn"> Roz yaad dilao</label>
+      <label class="f" for="remTime">Time</label>
+      <input class="input" id="remTime" type="time" value="20:00">
+      <button class="go alt" id="saveRem">Reminder set karo</button>
+      <div class="okmsg" id="remOk" hidden></div>
+    </div>
+
+    <div class="sec">
+      <h2>Awaaz</h2>
+      <label class="f" for="rate">Speed</label>
+      <select class="input" id="rate">
+        <option value="0.8">Aahista</option>
+        <option value="0.95" selected>Normal</option>
+        <option value="1.15">Tez</option>
+      </select>
+      <p class="help">Roman Urdu desi English awaaz mein padha jata hai. Perfect Urdu lehja nahi hoga.</p>
+    </div>
+
+    <div class="sec">
+      <h2>Offline pack</h2>
+      <p class="help" id="packInfo"></p>
+      <button class="go alt" id="packBtn">20 cards download karo</button>
+      <button class="ghost" id="packClear" style="margin-top:10px">Pack khali karo</button>
+    </div>
+    <p class="help" id="ver" style="margin-top:28px">Seekho __APP_VERSION__</p>
+  </section>
+
+  <!-- FEED -->
+  <section id="feed" hidden></section>
+</main>
+
+<div id="scrim" hidden></div>
+<div id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="grab"></div>
+  <div class="shead">
+    <div><h3 id="sheetTitle"></h3><p class="sub" id="sheetSub"></p></div>
+    <button class="icon" id="sheetSpeak" aria-label="Suno">🔊</button>
+  </div>
+  <div id="sheetOut"></div>
+  <form class="ask" id="askForm">
+    <input id="askIn" placeholder="Is concept pe kuch bhi pucho" autocomplete="off">
+    <button>Pucho</button>
+  </form>
+</div>
+<div id="toast" hidden role="status"></div>
+
+<script>
+/* ================= basics ================= */
+const $ = s => document.querySelector(s);
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch{ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch{} }
+};
+const dstr = d => { const x=new Date(d); return x.getFullYear()+"-"+String(x.getMonth()+1).padStart(2,"0")+"-"+String(x.getDate()).padStart(2,"0"); };
+const today = () => dstr(Date.now());
+const addDays = n => dstr(Date.now()+n*864e5);
+function el(tag,cls,text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+function toast(t){ const x=$("#toast"); x.textContent=t; x.hidden=false; clearTimeout(toast.t); toast.t=setTimeout(()=>x.hidden=true,2200); }
+const Plug = () => (window.Capacitor && window.Capacitor.Plugins) || {};
+const isNative = () => !!(window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform());
+
+/* ================= data ================= */
+const BASE_TOPICS = [
+  {label:"Backend / networking", v:"Backend aur networking (HTTP, TCP, proxies, load balancers, APIs, gRPC, WebSockets)"},
+  {label:"Databases", v:"Databases (indexes, transactions, isolation levels, replication, sharding, query plans)"},
+  {label:"Mixed tech", v:"Mixed tech (OS, caching, queues, security basics, system design)"}
+];
+let prefs = store.get("seekho:prefs",{on:BASE_TOPICS.map(t=>t.v), custom:[], level:"Beginner", goal:10});
+let lib   = store.get("seekho:lib",[]);      // {id,title,topic,body,example,takeaway,d}
+let srs   = store.get("seekho:srs",{});      // id -> {box,due}
+let saved = store.get("seekho:saved",[]);    // ids
+let days  = store.get("seekho:days",{});     // date -> {cards,right,total}
+let pack  = store.get("seekho:pack",[]);     // offline batches
+const INTERVALS=[1,3,7,14,30];
+// migrate v1 library entries
+lib.forEach((c,i)=>{ if(!c.id){ c.id="old"+i; if(!srs[c.id]) srs[c.id]={box:0,due:addDays(1)}; } });
+
+const savePrefs=()=>store.set("seekho:prefs",prefs);
+const saveLib=()=>store.set("seekho:lib",lib);
+const saveSrs=()=>store.set("seekho:srs",srs);
+const byId = id => lib.find(c=>c.id===id);
+function bumpDay(f,n=1){ const t=today(); days[t]=days[t]||{cards:0,right:0,total:0}; days[t][f]+=n; store.set("seekho:days",days); }
+function dueIds(){ const t=today(); return Object.keys(srs).filter(id=>srs[id].due<=t && byId(id)); }
+function grade(id,right){
+  if(!id||!srs[id]) return;
+  const s=srs[id];
+  if(right){ s.box=Math.min(s.box+1,INTERVALS.length-1); s.due=addDays(INTERVALS[s.box]); }
+  else { s.box=0; s.due=addDays(1); }
+  saveSrs();
+}
+function addCards(cards){
+  const out=[];
+  cards.forEach((c,i)=>{
+    if(!c||!c.title) return;
+    const id=Date.now().toString(36)+i+Math.random().toString(36).slice(2,5);
+    const card={id,title:c.title,topic:c.topic||"Tech",body:c.body||"",example:c.example||"",takeaway:c.takeaway||"",d:today()};
+    lib.push(card); srs[id]={box:0,due:addDays(1)}; out.push(card);
+  });
+  if(lib.length>600){ const drop=lib.splice(0,lib.length-600); drop.forEach(c=>{ if(!saved.includes(c.id)) delete srs[c.id]; }); }
+  saveLib(); saveSrs(); return out;
+}
+
+/* ================= AI ================= */
+const DEFAULTS={claude:"claude-haiku-5-5", gemini:"gemini-flash-latest"};
+function cfg(){ return store.get("seekho:cfg",{prov:"claude",key:"",model:DEFAULTS.claude}); }
+async function ai(prompt,wantJson){
+  const c=cfg();
+  if(!c.key) throw {code:"nokey"};
+  let text;
+  try{
+    if(c.prov==="gemini"){
+      const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(c.model)}:generateContent`,{
+        method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":c.key},
+        body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],generationConfig:wantJson?{responseMimeType:"application/json"}:{}})});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok) throw {code:r.status,msg:d.error?.message};
+      text=(d.candidates?.[0]?.content?.parts||[]).map(p=>p.text||"").join("");
+    }else{
+      const r=await fetch("https://api.anthropic.com/v1/messages",{
+        method:"POST",headers:{"Content-Type":"application/json","x-api-key":c.key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+        body:JSON.stringify({model:c.model,max_tokens:2500,messages:[{role:"user",content:prompt}]})});
+      const d=await r.json().catch(()=>({}));
+      if(!r.ok) throw {code:r.status,msg:d.error?.message};
+      text=(d.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+    }
+  }catch(e){ if(e instanceof TypeError) throw {code:"net"}; throw e; }
+  if(!wantJson) return text.trim();
+  const clean=text.replace(/```json|```/g,"").trim();
+  return JSON.parse(clean.slice(clean.indexOf("{"),clean.lastIndexOf("}")+1));
+}
+function errMsg(e){
+  if(e?.code==="nokey") return "API key nahi hai. Settings mein daalo.";
+  if(e?.code==="net") return "Internet nahi hai."+(pack.length?"":" Offline pack bhi khali hai.");
+  if([400,401,403].includes(e?.code)) return "Key ya model galat hai, ya credit khatam. Settings check karo."+(e.msg?` (${e.msg})`:"");
+  if(e?.code===404) return "Model nahi mila. Settings mein model naam badlo.";
+  if(e?.code===429||e?.code===529) return "Limit hit ya server busy. Thodi der baad try karo.";
+  if(e instanceof SyntaxError) return "Jawab samajh nahi aaya. Dobara try karo.";
+  return "Kuch ghalat hua. Dobara try karo."+(e?.msg?` (${e.msg})`:"");
+}
+const STYLE=()=>`Language: Roman Urdu (English letters mein Urdu). Technical terms English mein hi rakho (jaise "TCP handshake", "index", "latency"). Casual, dost ki tarah. Chhote jumle. Hussein Nasser ke backend-engineering style mein: first principles, "kyun" pe zor. Learner ka level: ${prefs.level}.`;
+
+/* ================= navigation ================= */
+let mode="feed";
+const PAGES=["home","saved","stats","settings","feed"];
+function show(id){
+  PAGES.forEach(p=>$("#"+p).hidden=p!==id);
+  document.querySelectorAll("[data-nav]").forEach(b=>{ if(b.dataset.nav===id) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+  $("#meter").hidden=!(id==="feed"&&mode==="feed");
+  if(id!=="feed") stopSpeak();
+  if(id==="home") renderHome();
+  if(id==="saved") renderSaved();
+  if(id==="stats") renderStats();
+  if(id==="settings") fillSettings();
+}
+let current="home", ignorePop=false;
+function go(id){
+  if(id===current) return;
+  if(current==="home") history.pushState({p:id},""); else history.replaceState({p:id},"");
+  current=id; show(id);
+}
+window.addEventListener("popstate",()=>{
+  if(ignorePop){ ignorePop=false; return; }
+  if(!$("#sheet").hidden){ closeSheet(true); return; }
+  current="home"; show("home");
+});
+function goHome(){ if(current!=="home") history.back(); }
+$("#homeBtn").onclick=goHome;
+document.querySelectorAll("[data-nav]").forEach(b=>b.onclick=()=>go(b.dataset.nav));
+
+/* ================= home ================= */
+function renderTopics(){
+  const box=$("#topics"); box.textContent="";
+  const all=[...BASE_TOPICS, ...prefs.custom.map(c=>({label:c,v:c,custom:true}))];
+  all.forEach(t=>{
+    const b=el("button","chip",t.label); b.setAttribute("aria-pressed",prefs.on.includes(t.v));
+    b.onclick=()=>{ prefs.on=prefs.on.includes(t.v)?prefs.on.filter(x=>x!==t.v):[...prefs.on,t.v]; savePrefs(); renderTopics(); };
+    if(t.custom){
+      const w=el("span","cwrap"); const x=el("button","x","×"); x.setAttribute("aria-label",`${t.label} hatao`);
+      x.onclick=()=>{ prefs.custom=prefs.custom.filter(c=>c!==t.v); prefs.on=prefs.on.filter(c=>c!==t.v); savePrefs(); renderTopics(); };
+      w.append(b,x); box.append(w);
+    } else box.append(b);
+  });
+  $("#start").disabled=!prefs.on.length;
+}
+$("#addTopic").onsubmit=e=>{
+  e.preventDefault();
+  const v=$("#topicIn").value.trim(); if(!v) return;
+  if(!prefs.custom.includes(v)) prefs.custom.push(v);
+  if(!prefs.on.includes(v)) prefs.on.push(v);
+  $("#topicIn").value=""; savePrefs(); renderTopics();
+};
+function single(groupSel,key,cast){
+  const g=$(groupSel);
+  const paint=()=>g.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",String(cast(c.dataset.v))===String(prefs[key])));
+  g.onclick=e=>{ const b=e.target.closest(".chip"); if(!b) return; prefs[key]=cast(b.dataset.v); savePrefs(); paint(); };
+  paint();
+}
+single("#level","level",String); single("#goal","goal",Number);
+
+function streak(){ return store.get("seekho:streak",{n:0,last:null}); }
+function renderHome(){
+  renderTopics();
+  const due=dueIds().length;
+  $("#dueBtn").hidden=!due;
+  $("#dueN").textContent=`${due} card${due>1?"s":""} dohrane hain`;
+  const s=streak(), t=days[today()];
+  const parts=[];
+  if(s.n) parts.push(`Streak: ${s.n} din`);
+  if(t?.cards) parts.push(`Aaj: ${t.cards} cards`);
+  if(lib.length) parts.push(`Total: ${lib.length}`);
+  $("#homeStats").textContent=parts.join(". ");
+  $("#testBtn").disabled=lib.length<3;
+  const n=$("#note"); if(!cfg().key){ n.textContent="Pehle Settings (⚙︎) mein API key daalo."; n.hidden=false; } else n.hidden=true;
+}
+
+/* ================= settings ================= */
+const provHelp={claude:"Key: platform.claude.com → Settings → API keys. Credit chahiye.",gemini:"Free key: aistudio.google.com → Get API key."};
+function fillSettings(){
+  const c=cfg(); $("#prov").value=c.prov; $("#key").value=c.key; $("#model").value=c.model; $("#provHelp").textContent=provHelp[c.prov];
+  const r=store.get("seekho:rem",{on:false,time:"20:00"}); $("#remOn").checked=r.on; $("#remTime").value=r.time;
+  $("#rate").value=String(store.get("seekho:rate",0.95));
+  $("#aiOk").hidden=true; $("#remOk").hidden=true; renderPack();
+}
+$("#prov").onchange=()=>{ const p=$("#prov").value; $("#model").value=DEFAULTS[p]; $("#provHelp").textContent=provHelp[p]; };
+$("#saveAi").onclick=()=>{
+  const p=$("#prov").value;
+  store.set("seekho:cfg",{prov:p,key:$("#key").value.trim(),model:$("#model").value.trim()||DEFAULTS[p]});
+  $("#aiOk").hidden=false;
+};
+$("#rate").onchange=()=>store.set("seekho:rate",+$("#rate").value);
+
+/* reminder */
+$("#saveRem").onclick=async()=>{
+  const on=$("#remOn").checked, time=$("#remTime").value||"20:00";
+  store.set("seekho:rem",{on,time});
+  const LN=Plug().LocalNotifications, msg=$("#remOk");
+  if(!LN||!isNative()){ msg.textContent="Reminder sirf Android app mein chalta hai."; msg.hidden=false; return; }
+  try{
+    await LN.cancel({notifications:[{id:1}]}).catch(()=>{});
+    if(!on){ msg.textContent="Reminder band."; msg.hidden=false; return; }
+    const perm=await LN.requestPermissions();
+    if(perm.display!=="granted"){ msg.textContent="Notification permission nahi mili. Phone settings mein allow karo."; msg.hidden=false; return; }
+    const [h,m]=time.split(":").map(Number);
+    await LN.schedule({notifications:[{id:1,title:"Seekho time",body:"Scroll karna hai? Pehle 10 cards. Phir phone band.",schedule:{on:{hour:h,minute:m},allowWhileIdle:true}}]});
+    msg.textContent=`Roz ${time} pe yaad dilaunga.`; msg.hidden=false;
+  }catch(e){ msg.textContent="Reminder set nahi hua."; msg.hidden=false; }
+};
+
+/* offline pack */
+function renderPack(){
+  const n=pack.reduce((a,b)=>a+(b.cards?.length||0),0);
+  $("#packInfo").textContent = n ? `${n} cards saved. Internet na ho to yeh chalenge.` : "Internet ke baghair padhne ke liye cards pehle download karo.";
+}
+$("#packBtn").onclick=async()=>{
+  const b=$("#packBtn"); b.disabled=true;
+  try{
+    for(let i=0;i<4;i++){
+      b.textContent=`Download ho raha hai (${i*5}/20)`;
+      const d=await ai(feedPrompt(pack.flatMap(p=>p.cards.map(c=>c.title))),true);
+      if(d?.cards) { pack.push(d); store.set("seekho:pack",pack); renderPack(); }
+    }
+    toast("Offline pack ready");
+  }catch(e){ toast(errMsg(e)); }
+  finally{ b.disabled=false; b.textContent="20 cards download karo"; }
+};
+$("#packClear").onclick=()=>{ pack=[]; store.set("seekho:pack",pack); renderPack(); };
+
+/* ================= voice ================= */
+let speaking=null;
+async function speak(text,btn){
+  if(speaking){ const same=speaking===btn; stopSpeak(); if(same) return; }
+  speaking=btn||true; btn?.classList.add("on");
+  const rate=store.get("seekho:rate",0.95), TTS=Plug().TextToSpeech;
+  const done=()=>{ if(speaking===(btn||true)){ btn?.classList.remove("on"); speaking=null; } };
+  try{
+    if(TTS&&isNative()){ await TTS.speak({text,lang:"en-IN",rate,category:"playback"}); done(); }
+    else if(window.speechSynthesis){
+      const u=new SpeechSynthesisUtterance(text); u.lang="en-IN"; u.rate=rate; u.onend=done; u.onerror=done;
+      speechSynthesis.cancel(); speechSynthesis.speak(u);
+    } else { toast("Awaaz is device pe nahi chal rahi."); done(); }
+  }catch{ toast("Awaaz nahi chali. Phone mein Google TTS install karo."); done(); }
+}
+function stopSpeak(){
+  const TTS=Plug().TextToSpeech;
+  try{ if(TTS&&isNative()) TTS.stop(); else window.speechSynthesis?.cancel(); }catch{}
+  if(speaking&&speaking!==true) speaking.classList.remove("on");
+  speaking=null;
+}
+const cardSpeech=c=>[c.title, c.body, c.example?("Misaal: "+c.example):"", c.takeaway].filter(Boolean).join(". ");
+
+/* ================= prompts ================= */
+function feedPrompt(extraSeen=[]){
+  const titles=[...lib.slice(-80).map(x=>x.title),...extraSeen].join(" | ")||"koi nahi";
+  return `Tum ek teacher ho jo Pakistani learner ko tech concepts sikhata hai.
+${STYLE()}
+
+Topics jin mein se chuno: ${prefs.on.join("; ")}.
+Mix karo. Level ke hisaab se depth rakho.
+Yeh titles pehle ho chuke, REPEAT mat karo: ${titles}.
+
+5 cards banao aur 1 quiz jo inhi cards mein se kisi ek par ho.
+Card:
+- title: concept naam, English, 2-5 words
+- topic: chhota topic label, jaise "Networking", "Databases", "Docker"
+- body: 2-3 chhote jumle. Kya hai, kyun zaroori.
+- example: 1 jumla. Pakistani daily-life misaal (dhaba, rickshaw, bank ki line) ya real-system example.
+- takeaway: 1 chhota yaad rakhne wala jumla.
+Quiz: title (jis card pe hai uska exact title), q, options (3), answer (0-2 index), why (1 jumla).
+
+SIRF JSON:
+{"cards":[{"title":"","topic":"","body":"","example":"","takeaway":""}],"quiz":{"title":"","q":"","options":["","",""],"answer":0,"why":""}}`;
+}
+function reviewPrompt(cards){
+  const list=cards.map((c,i)=>`${i+1}. ${c.title}: ${c.body}`).join("\n");
+  return `Learner ne yeh concepts pehle seekhe the:
+${list}
+
+${STYLE()}
+Har concept ke liye EK multiple-choice sawal banao (kul ${cards.length}) jo samajh check kare, sirf rattaa nahi.
+Har sawal: n (concept ka number upar wali list se), q, options (3), answer (0-2 index), why (1 jumla).
+SIRF JSON: {"quiz":[{"n":1,"q":"","options":["","",""],"answer":0,"why":""}]}`;
+}
+
+/* ================= cards & quiz UI ================= */
+function cardEl(c,opts={}){
+  const k=el("div","card");
+  const head=el("div","chead");
+  head.append(el("span","tag",c.topic||"Tech"));
+  const st=el("button","star",saved.includes(c.id)?"★":"☆");
+  st.setAttribute("aria-pressed",saved.includes(c.id)); st.setAttribute("aria-label","Save");
+  st.onclick=()=>{
+    if(saved.includes(c.id)){ saved=saved.filter(x=>x!==c.id); toast("Saved se hata diya"); }
+    else { saved.push(c.id); toast("Saved"); }
+    store.set("seekho:saved",saved);
+    st.textContent=saved.includes(c.id)?"★":"☆"; st.setAttribute("aria-pressed",saved.includes(c.id));
+    if(opts.onUnsave && !saved.includes(c.id)) opts.onUnsave();
+  };
+  head.append(st);
+  k.append(head, el("h2",null,c.title), el("p","body",c.body));
+  if(c.example){ const ex=el("p","ex"); ex.append(el("b",null,"Misaal: "),document.createTextNode(c.example)); k.append(ex); }
+  if(c.takeaway) k.append(el("p","take",c.takeaway));
+  const acts=el("div","acts");
+  const sp=el("button","act","🔊 Suno"); sp.onclick=()=>speak(cardSpeech(c),sp); acts.append(sp);
+  [["simple","Asaan karo"],["expand","Detail mein"],["example","Aur misaal"],["usecase","Use case"],["ask","Sawal pucho"]]
+    .forEach(([a,label])=>{ const b=el("button","act",label); b.onclick=()=>openSheet(c,a); acts.append(b); });
+  k.append(acts);
+  if(opts.hint) k.append(el("p","hint","Upar swipe karo"));
+  return k;
+}
+function slideOf(inner,kind){ const s=el("div","slide"); if(kind) s.dataset.kind=kind; s.append(inner); return s; }
+
+function quizSlide(q,label,cardId){
+  const k=el("div","card");
+  k.append(el("span",label?"tag review":"tag",label||"Quiz"), el("h2",null,q.q));
+  const why=el("p","why",q.why||""); why.hidden=true;
+  const s=slideOf(k,"quiz");
+  (q.options||[]).forEach((o,i)=>{
+    const b=el("button","opt",o);
+    b.onclick=()=>{
+      const right=i===q.answer;
+      k.querySelectorAll(".opt").forEach((x,j)=>{ x.disabled=true; if(j===q.answer) x.classList.add("right"); });
+      if(!right) b.classList.add("wrong");
+      why.hidden=false;
+      if(!right){ const c=byId(cardId); if(c){ why.textContent=(q.why||"")+` Yeh card ${INTERVALS[0]} din baad dobara aayega.`; } }
+      bumpDay("total"); if(right) bumpDay("right");
+      grade(cardId,right);
+      s.dispatchEvent(new CustomEvent("answered",{detail:right}));
+    };
+    k.append(b);
+  });
+  k.append(why);
+  return s;
+}
+
+/* ================= feed ================= */
+let goal=10, seen=0, loading=false, batchNo=0;
+function loader(text){ const c=el("div","card"); c.append(el("span","dots",text)); const s=slideOf(c); s.classList.add("loading"); s.id="loader"; $("#feed").append(s); return s; }
+function loaderError(e,retry){
+  const l=$("#loader"); if(!l) return;
+  const c=l.querySelector(".card"); c.textContent="";
+  c.append(el("p",null,errMsg(e)));
+  const row=el("div","row");
+  const b=el("button","ghost","Dobara try karo"); b.onclick=()=>{ l.remove(); retry(); };
+  const s=el("button","ghost","Settings"); s.onclick=()=>go("settings");
+  row.append(b,s); c.append(row);
+}
+async function loadBatch(){
+  if(loading||seen>=goal||mode!=="feed") return;
+  loading=true;
+  if(!$("#loader")) loader("Cards ban rahe hain");
+  try{
+    let data;
+    const offline = navigator.onLine===false;
+    if(offline && pack.length){ data=pack.shift(); store.set("seekho:pack",pack); }
+    else{
+      try{ data=await ai(feedPrompt(),true); }
+      catch(e){
+        if(e?.code==="net" && pack.length){ data=pack.shift(); store.set("seekho:pack",pack); toast("Offline pack se"); }
+        else throw e;
+      }
+    }
+    $("#loader")?.remove();
+    if(seen>=goal||mode!=="feed") return;
+    renderBatch(data);
+    // time to time: review quiz on an older card
+    if(batchNo%2===0){
+      const old=lib.filter(c=>c.d!==today()); const due=dueIds().map(byId).filter(Boolean);
+      const pickFrom=due.length?due:old;
+      if(pickFrom.length && navigator.onLine!==false){
+        const c=pickFrom[Math.floor(Math.random()*pickFrom.length)];
+        try{ const r=await ai(reviewPrompt([c]),true); const q=r.quiz?.[0];
+          if(q&&seen<goal&&mode==="feed"){ $("#feed").append(quizSlide(q,`Yaad hai? ${c.title}`,c.id)); observe(); } }catch{}
+      }
+    }
+  }catch(e){ loaderError(e,loadBatch); }
+  finally{ loading=false; }
+}
+function renderBatch(data){
+  const feed=$("#feed"); batchNo++;
+  const cards=addCards(data?.cards||[]);
+  cards.forEach((c,i)=>feed.append(slideOf(cardEl(c,{hint:batchNo===1&&i===0}),"card")));
+  const q=data?.quiz;
+  if(q?.options){ const match=cards.find(c=>c.title===q.title)||cards[0]; feed.append(quizSlide(q,null,match?.id)); }
+  observe();
+}
+const io=new IntersectionObserver(es=>{
+  es.forEach(en=>{
+    if(!en.isIntersecting||en.intersectionRatio<.6||mode!=="feed") return;
+    const s=en.target;
+    stopSpeak();
+    if(s.dataset.kind==="card"&&!s.dataset.counted){
+      s.dataset.counted="1"; seen++; bumpDay("cards"); tick();
+      if(seen>=goal){ finish(); return; }
+    }
+    const all=[...$("#feed").children];
+    if(all.length-all.indexOf(s)<=3) loadBatch();
+  });
+},{threshold:[.6]});
+function observe(){ document.querySelectorAll("#feed .slide:not([data-o])").forEach(s=>{ s.dataset.o="1"; io.observe(s); }); }
+function tick(){ $("#count").textContent=`${seen}/${goal}`; $("#fill").style.width=Math.min(100,seen/goal*100)+"%"; }
+function finish(){
+  const feed=$("#feed"); const counted=[...feed.children].filter(s=>s.dataset.counted);
+  let n=counted[counted.length-1].nextElementSibling;
+  if(n&&n.dataset.kind==="quiz") n=n.nextElementSibling;
+  while(n){ const nx=n.nextElementSibling; n.remove(); n=nx; }
+  const s=streak();
+  if(s.last!==today()){ s.n = s.last===addDays(-1) ? s.n+1 : 1; s.last=today(); store.set("seekho:streak",s); }
+  const k=el("div","card");
+  k.append(el("h2",null,"Aaj ka goal pura."), el("p","body",`${seen} concepts seekhe. Streak: ${s.n} din. Ab phone rakho.`));
+  const row=el("div","row");
+  const more=el("button","ghost","5 aur"); more.onclick=()=>{ goal+=5; d.remove(); tick(); loadBatch(); };
+  const test=el("button","ghost","Test lo"); test.onclick=()=>{ mode="test"; startQuiz("test"); };
+  const home=el("button","ghost","Band karo"); home.onclick=goHome;
+  row.append(more,test,home); k.append(row); const d=slideOf(k); feed.append(d);
+}
+$("#start").onclick=()=>{
+  if(!cfg().key && !pack.length){ go("settings"); return; }
+  mode="feed"; goal=prefs.goal; seen=0; batchNo=0;
+  $("#feed").innerHTML=""; $("#feed").scrollTop=0;
+  go("feed"); tick(); loadBatch();
+};
+
+/* ================= test & review ================= */
+function shuffle(a){ a=a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+async function startQuiz(kind){
+  if(!cfg().key){ go("settings"); return; }
+  let cards = kind==="review" ? dueIds().map(byId).filter(Boolean) : shuffle(lib).slice(0,5);
+  cards = shuffle(cards).slice(0,5);
+  if(!cards.length){ toast("Abhi kuch dohrana nahi"); return; }
+  mode=kind; $("#feed").innerHTML=""; $("#feed").scrollTop=0;
+  if(current!=="feed"){ go("feed"); } else show("feed");
+  loader(kind==="review"?"Revision ban raha hai":"Test ban raha hai");
+  try{
+    const r=await ai(reviewPrompt(cards),true);
+    $("#loader")?.remove();
+    const qs=(r.quiz||[]).filter(q=>q.options);
+    let right=0, done=0;
+    qs.forEach((q,i)=>{
+      const c=cards[(q.n||i+1)-1]||cards[i];
+      const s=quizSlide(q,`Sawal ${i+1}/${qs.length}. ${c?.title||""}`,c?.id);
+      s.addEventListener("answered",e=>{ done++; if(e.detail) right++; if(done===qs.length) showResult(right,qs.length,kind); });
+      $("#feed").append(s);
+    });
+  }catch(e){ loaderError(e,()=>startQuiz(kind)); }
+}
+function showResult(r,t,kind){
+  const k=el("div","card"); const pct=Math.round(r/t*100);
+  k.append(el("h2",null,`${r}/${t} sahi`),
+    el("p","body", pct>=80?"Zabardast. Yaad pakki hai.":pct>=50?"Theek hai. Galat wale jaldi dobara aayenge.":"Koi baat nahi. Galat wale kal dobara aayenge."));
+  const row=el("div","row");
+  const left=dueIds().length;
+  if(kind==="review"&&left){ const b=el("button","ghost",`Aur ${left} dohrao`); b.onclick=()=>startQuiz("review"); row.append(b); }
+  if(kind==="test"){ const b=el("button","ghost","Naya test"); b.onclick=()=>startQuiz("test"); row.append(b); }
+  const home=el("button","ghost","Wapas"); home.onclick=goHome; row.append(home);
+  k.append(row); $("#feed").append(slideOf(k));
+}
+$("#testBtn").onclick=()=>startQuiz("test");
+$("#dueBtn").onclick=()=>startQuiz("review");
+
+/* ================= saved ================= */
+function renderSaved(){
+  const box=$("#savedList"); box.textContent="";
+  const list=saved.map(byId).filter(Boolean).reverse();
+  if(!list.length){ box.append(el("p","empty","Koi saved card nahi. Card pe ☆ dabao.")); return; }
+  list.forEach(c=>{ const k=cardEl(c,{onUnsave:()=>k.remove()}); box.append(k); });
+}
+
+/* ================= stats ================= */
+function renderStats(){
+  let right=0,total=0; Object.values(days).forEach(d=>{ right+=d.right; total+=d.total; });
+  const mastered=Object.values(srs).filter(s=>s.box>=3).length;
+  const tiles=[[streak().n||0,"din streak"],[lib.length,"cards seekhe"],[total?Math.round(right/total*100)+"%":"–","quiz sahi"],[mastered,"pakke yaad (2 hafte+)"],[dueIds().length,"dohrane hain"],[saved.length,"saved"]];
+  const g=$("#tiles"); g.textContent="";
+  tiles.forEach(([v,l])=>{ const t=el("div","tile"); t.append(el("div","big",String(v)),el("span",null,l)); g.append(t); });
+  const w=$("#week"); w.textContent="";
+  const vals=[...Array(7)].map((_,i)=>{ const d=addDays(i-6); return {d,n:days[d]?.cards||0}; });
+  const max=Math.max(5,...vals.map(v=>v.n));
+  const names=["Itw","Pir","Mng","Bud","Jum","Jmt","Hft"];
+  vals.forEach((v,i)=>{
+    const col=el("div",i===6?"today":""); col.append(el("span",null,String(v.n)));
+    const bar=el("i"); bar.style.height=(v.n/max*100)+"%"; col.append(bar);
+    col.append(el("span",null,i===6?"Aaj":names[new Date(v.d+"T12:00").getDay()])); w.append(col);
+  });
+  const ts=$("#topicStats"); ts.textContent="";
+  const counts={}; lib.forEach(c=>counts[c.topic]=(counts[c.topic]||0)+1);
+  const rows=Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  if(!rows.length) ts.append(el("p","empty","Abhi data nahi."));
+  rows.forEach(([t,n])=>{ const r=el("div","trow"); r.append(el("span",null,t),el("b",null,String(n))); ts.append(r); });
+}
+
+/* ================= sheet ================= */
+let sheetCard=null, sheetCtl=0;
+const ACTIONS={
+  simple:{t:"Asaan karo",p:()=>`Is concept ko bilkul asaan bana do, jaise 12 saal ke bache ko samjha rahe ho. Ek desi misaal do. 4-6 jumle.`},
+  expand:{t:"Detail mein",p:()=>`Is concept ko detail mein samjhao: andar se kaise kaam karta hai, kyun aisa design hai, trade-offs kya hain, common galti kya hoti hai. Short paragraphs, 150-250 words.`},
+  example:{t:"Aur misaal",p:()=>`Is concept ki 2 nayi misaalein do: ek Pakistani daily-life wali, ek real software/system wali (ho sake to chhota code ya command). Har misaal 2-3 jumle.`},
+  usecase:{t:"Use case",p:()=>`Is concept ke 3 real-world use cases do: kaun si company/system isay kahan use karta hai aur kyun. Phir 1 jumla: kab use NAHI karna chahiye.`},
+  ask:{t:"Sawal pucho",p:null}
+};
+const NOMD="Markdown symbols (#, *, **) mat use karo. Plain text.";
+const ctx=c=>`Concept: ${c.title}\nCard pe likha tha: ${c.body}\n${c.takeaway||""}\n\n${STYLE()}\n\n`;
+function openSheet(c,a){
+  stopSpeak(); sheetCard=c;
+  $("#sheetTitle").textContent=ACTIONS[a].t; $("#sheetSub").textContent=c.title; $("#sheetOut").textContent="";
+  $("#scrim").hidden=false; $("#sheet").hidden=false; history.pushState({sheet:1},"");
+  if(a==="ask"){ $("#askIn").focus(); return; }
+  run(ctx(c)+ACTIONS[a].p()+" "+NOMD);
+}
+async function run(prompt){
+  const id=++sheetCtl, out=$("#sheetOut");
+  out.textContent=""; out.append(el("span","dots","Soch raha hoon"));
+  try{ const t=await ai(prompt,false); if(id===sheetCtl) out.textContent=t.replace(/\*\*/g,"").replace(/^#+\s*/gm,""); }
+  catch(e){ if(id===sheetCtl) out.textContent=errMsg(e); }
+}
+function closeSheet(fromPop){
+  if($("#sheet").hidden) return;
+  sheetCtl++; stopSpeak(); $("#scrim").hidden=true; $("#sheet").hidden=true; $("#askIn").value="";
+  if(!fromPop){ ignorePop=true; history.back(); }
+}
+$("#scrim").onclick=()=>closeSheet(false);
+$("#sheetSpeak").onclick=()=>{ const t=$("#sheetOut").textContent; if(t) speak(t,$("#sheetSpeak")); };
+$("#askForm").onsubmit=e=>{
+  e.preventDefault(); const q=$("#askIn").value.trim(); if(!q||!sheetCard) return;
+  $("#sheetTitle").textContent="Sawal: "+q; $("#askIn").value="";
+  run(ctx(sheetCard)+`Learner ka sawal: "${q}"\nSeedha jawab do, 3-8 jumle. Zaroorat ho to misaal. ${NOMD}`);
+};
+
+/* ================= boot ================= */
+if($("#ver").textContent.includes("__")) $("#ver").textContent="Seekho dev build";
+saveLib(); saveSrs();
+history.replaceState({p:"home"},"");
+show("home");
+</script>
+</body>
+</html>

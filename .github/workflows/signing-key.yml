@@ -1,0 +1,35 @@
+# Run ONCE by hand. Creates the app signing key.
+# Needs repo secret KEYSTORE_PASSWORD (8+ chars) set first.
+# Output artifact (deleted after 1 day): seekho.jks (back it up!) and its base64 text.
+name: Create signing key (run once)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  key:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Generate keystore
+        env:
+          KS_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: |
+          if [ ${#KS_PASS} -lt 8 ]; then
+            echo "::error::Add repo secret KEYSTORE_PASSWORD (8+ characters) first."; exit 1
+          fi
+          mkdir key
+          keytool -genkeypair -storetype PKCS12 -keystore key/seekho.jks -alias seekho \
+            -keyalg RSA -keysize 4096 -validity 10000 \
+            -storepass "$KS_PASS" -keypass "$KS_PASS" -dname "CN=Seekho, O=Seekho, C=PK"
+          base64 -w0 key/seekho.jks > key/KEYSTORE_BASE64.txt
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: signing-key
+          path: key/
+          retention-days: 1
