@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="ur-Latn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Seekho</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EAF1EC; --ink:#10302E; --soft:#4C6B67; --card:#FFFFFF; --line:#C9DAD2;
+  --accent:#E8A317; --accent-ink:#2A1C00; --good:#1F7A4D; --bad:#B23A2E;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --bg:#0D2624; --ink:#EAF3EE; --soft:#9DB8B2; --card:#143331; --line:#24504C;
+    --accent:#F2B134; --good:#5BC98D; --bad:#F07B6E; color-scheme:dark; }
+}
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:400 17px/1.55 "Atkinson Hyperlegible",system-ui,sans-serif;
+  display:flex;flex-direction:column;overflow:hidden;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+h1,h2,h3,.logo,.go{font-family:"Bricolage Grotesque","Atkinson Hyperlegible",system-ui,sans-serif}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 18px;border-bottom:1px solid var(--line);flex:none}
+.logo{font-weight:800;font-size:22px;letter-spacing:-.02em;background:none;border:0;padding:0}
+.meter{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--soft)}
+.bar{width:90px;height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.icon{background:none;border:0;font-size:22px;padding:4px 6px;color:var(--soft)}
+
+main{flex:1;min-height:0;position:relative}
+.page{height:100%;overflow:auto;padding:26px 20px 40px;max-width:560px;margin:0 auto}
+.page h1{font-size:clamp(32px,8vw,50px);line-height:1.02;letter-spacing:-.03em;margin:6px 0 14px}
+.page > p{color:var(--soft);margin:0 0 24px}
+fieldset{border:0;padding:0;margin:0 0 22px}
+legend{font-weight:700;margin-bottom:10px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:2px solid var(--line);background:transparent;padding:9px 14px;border-radius:999px}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.go{display:block;width:100%;margin-top:8px;padding:16px;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:800;font-size:20px}
+.go.alt{background:transparent;color:var(--ink);border:2px solid var(--ink);font-size:18px}
+.go:disabled{opacity:.5}
+.stats{margin-top:18px;font-size:15px;color:var(--soft)}
+.note{margin-top:14px;font-size:15px;color:var(--bad)}
+label.f{display:block;font-weight:700;margin:0 0 6px}
+.input{width:100%;padding:12px;border:2px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:6px}
+.help{font-size:14px;color:var(--soft);margin:0 0 18px}
+.help a{color:inherit}
+
+/* feed */
+#feed{height:100%;overflow-y:auto;scroll-snap-type:y mandatory;overscroll-behavior:contain}
+.slide{height:100%;scroll-snap-align:start;scroll-snap-stop:always;display:flex;align-items:center;justify-content:center;padding:16px}
+.card{width:100%;max-width:520px;max-height:100%;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:24px 22px}
+.tag{display:inline-block;font-size:13px;color:var(--soft);margin-bottom:6px}
+.tag.review{color:var(--accent)}
+.card h2{font-size:clamp(26px,7vw,38px);line-height:1.05;letter-spacing:-.025em;margin:0 0 14px}
+.body{margin:0 0 16px}
+.ex{border-left:4px solid var(--accent);padding:4px 0 4px 14px;margin:0 0 16px;color:var(--soft)}
+.ex b{color:var(--ink)}
+.take{font-weight:700;margin:0 0 18px}
+.acts{display:flex;flex-wrap:wrap;gap:6px;border-top:1px solid var(--line);padding-top:14px}
+.act{border:1.5px solid var(--line);background:transparent;padding:7px 11px;border-radius:999px;font-size:14px}
+.hint{text-align:center;color:var(--soft);font-size:13px;margin-top:12px}
+
+.opt{display:block;width:100%;text-align:left;margin:0 0 10px;padding:13px 14px;border:2px solid var(--line);border-radius:12px;background:transparent}
+.opt.right{border-color:var(--good);background:color-mix(in srgb,var(--good) 14%,transparent)}
+.opt.wrong{border-color:var(--bad);background:color-mix(in srgb,var(--bad) 14%,transparent)}
+.why{margin-top:6px;color:var(--soft)}
+.score{font-size:15px;color:var(--soft);margin-bottom:6px}
+
+.loading .card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;min-height:240px;color:var(--soft);text-align:center}
+.dots::after{content:"";animation:d 1.2s steps(4) infinite}
+@keyframes d{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.ghost{padding:11px 16px;border-radius:12px;border:2px solid var(--line);background:transparent}
+
+/* bottom sheet */
+#scrim{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:20}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:21;max-height:82%;display:flex;flex-direction:column;
+  background:var(--card);border-radius:22px 22px 0 0;border-top:1px solid var(--line);
+  padding:10px 20px calc(16px + env(safe-area-inset-bottom,0px))}
+#sheet .grab{width:44px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 12px}
+#sheet h3{margin:0 0 4px;font-size:20px}
+#sheet .sub{color:var(--soft);font-size:14px;margin:0 0 10px}
+#sheetOut{overflow:auto;white-space:pre-wrap;flex:1;min-height:60px}
+.ask{display:flex;gap:8px;margin-top:12px}
+.ask input{flex:1;padding:11px;border:2px solid var(--line);border-radius:12px;background:var(--bg)}
+.ask button{padding:0 16px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:700}
+@media (prefers-reduced-motion:reduce){.dots::after{animation:none;content:"..."}.bar i{transition:none}}
+</style>
+</head>
+<body>
+<header>
+  <button class="logo" id="homeBtn">seekho</button>
+  <div class="meter" id="meter" hidden><span id="count"></span><div class="bar" aria-hidden="true"><i id="fill"></i></div></div>
+  <button class="icon" id="setBtn" aria-label="Settings">⚙︎</button>
+</header>
+
+<main>
+  <!-- HOME -->
+  <section class="page" id="home">
+    <h1>Scroll ki aadat. Lekin seekhne ke liye.</h1>
+    <p>Har card ek concept. Roman Urdu, English terms ke saath. Goal pura, feed band.</p>
+    <fieldset>
+      <legend>Topics</legend>
+      <div class="chips" id="topics">
+        <button class="chip" aria-pressed="true" data-v="Backend aur networking (HTTP, TCP, proxies, load balancers, APIs, gRPC, WebSockets)">Backend / networking</button>
+        <button class="chip" aria-pressed="true" data-v="Databases (indexes, transactions, isolation levels, replication, sharding, query plans)">Databases</button>
+        <button class="chip" aria-pressed="true" data-v="Mixed tech (OS, caching, queues, security basics, system design)">Mixed tech</button>
+      </div>
+    </fieldset>
+    <fieldset>
+      <legend>Aaj kitne cards?</legend>
+      <div class="chips" id="goal">
+        <button class="chip" aria-pressed="false" data-v="5">5</button>
+        <button class="chip" aria-pressed="true" data-v="10">10</button>
+        <button class="chip" aria-pressed="false" data-v="20">20</button>
+      </div>
+    </fieldset>
+    <button class="go" id="start">Shuru karo</button>
+    <button class="go alt" id="testBtn" style="margin-top:10px">Mera test lo</button>
+    <div class="stats" id="stats"></div>
+    <div class="note" id="note" hidden></div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="page" id="settings" hidden>
+    <h1>Settings</h1>
+    <p>App ko AI chahiye. Apni API key daalo. Key sirf is phone pe rehti hai.</p>
+    <label class="f" for="prov">AI provider</label>
+    <select class="input" id="prov">
+      <option value="gemini">Google Gemini (free tier)</option>
+      <option value="claude">Anthropic Claude (paid)</option>
+    </select>
+    <p class="help" id="provHelp"></p>
+    <label class="f" for="key">API key</label>
+    <input class="input" id="key" type="password" autocomplete="off" spellcheck="false" placeholder="Key paste karo">
+    <p class="help">Key kisi ko mat do.</p>
+    <label class="f" for="model">Model</label>
+    <input class="input" id="model" spellcheck="false">
+    <p class="help">Error aaye to model naam check karo.</p>
+    <button class="go" id="save">Save karo</button>
+    <div class="stats" id="saved" hidden>Saved.</div>
+  </section>
+
+  <!-- FEED -->
+  <section id="feed" hidden></section>
+</main>
+
+<div id="scrim" hidden></div>
+<div id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="grab"></div>
+  <h3 id="sheetTitle"></h3>
+  <p class="sub" id="sheetSub"></p>
+  <div id="sheetOut"></div>
+  <form class="ask" id="askForm">
+    <input id="askIn" placeholder="Is concept pe kuch bhi pucho" autocomplete="off">
+    <button>Pucho</button>
+  </form>
+</div>
+
+<script>
+/* ---------- storage ---------- */
+const $ = s => document.querySelector(s);
+const store = {
+  get(k,d){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):d; }catch{ return d; } },
+  set(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch{} }
+};
+const today = () => new Date().toISOString().slice(0,10);
+const DEFAULTS = { gemini:"gemini-flash-latest", claude:"claude-haiku-5-5" };
+
+/* ---------- AI ---------- */
+function cfg(){ return store.get("seekho:cfg",{prov:"gemini",key:"",model:DEFAULTS.gemini}); }
+
+async function ai(prompt, wantJson){
+  const c = cfg();
+  if(!c.key) throw {code:"nokey"};
+  let text;
+  if(c.prov==="gemini"){
+    const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(c.model)}:generateContent`,{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-goog-api-key":c.key},
+      body:JSON.stringify({contents:[{role:"user",parts:[{text:prompt}]}],
+        generationConfig: wantJson?{responseMimeType:"application/json"}:{}})
+    });
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok) throw {code:r.status, msg:d.error?.message};
+    text = (d.candidates?.[0]?.content?.parts||[]).map(p=>p.text||"").join("");
+  }else{
+    const r = await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":c.key,"anthropic-version":"2023-06-01",
+        "anthropic-dangerous-direct-browser-access":"true"},
+      body:JSON.stringify({model:c.model,max_tokens:2000,messages:[{role:"user",content:prompt}]})
+    });
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok) throw {code:r.status, msg:d.error?.message};
+    text = (d.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("");
+  }
+  if(!wantJson) return text.trim();
+  const clean = text.replace(/```json|```/g,"").trim();
+  const s = clean.indexOf("{"), e = clean.lastIndexOf("}");
+  return JSON.parse(clean.slice(s,e+1));
+}
+
+function errMsg(e){
+  if(e?.code==="nokey") return "API key nahi hai. Settings mein daalo.";
+  if(e?.code===400||e?.code===401||e?.code===403) return "Key ya model galat hai. Settings check karo.";
+  if(e?.code===404) return "Model nahi mila. Settings mein model naam badlo.";
+  if(e?.code===429) return "Limit hit. Thodi der baad try karo.";
+  if(e instanceof SyntaxError) return "Jawab samajh nahi aaya. Dobara try karo.";
+  return "Internet ya server issue. Dobara try karo." + (e?.msg?` (${e.msg})`:"");
+}
+
+const STYLE = `Language: Roman Urdu (English letters mein Urdu). Technical terms English mein hi rakho (jaise "TCP handshake", "index", "latency"). Casual, dost ki tarah. Chhote jumle. Hussein Nasser ke backend-engineering style mein: first principles, "kyun" pe zor.`;
+
+/* ---------- state ---------- */
+let goal=10, seen=0, loading=false, batchNo=0, mode="feed";
+let library = store.get("seekho:lib",[]);   // {title,topic,body,takeaway,d}
+let quizStats = store.get("seekho:qs",{right:0,total:0});
+
+/* ---------- navigation ---------- */
+function show(id){
+  for(const s of ["home","settings","feed"]) $("#"+s).hidden = s!==id;
+  $("#meter").hidden = !(id==="feed" && mode==="feed");
+  if(id==="home") renderStats();
+}
+function go(id){ if(id!=="home") history.pushState({p:id},""); show(id); }
+let ignorePop=false;
+window.addEventListener("popstate",()=>{
+  if(ignorePop){ ignorePop=false; return; }
+  if(!$("#sheet").hidden){ closeSheet(true); return; }
+  show("home");
+});
+$("#homeBtn").onclick = ()=>{ if(!$("#home").hidden) return; history.back(); };
+$("#setBtn").onclick = ()=>{ fillSettings(); go("settings"); };
+
+/* ---------- home ---------- */
+function renderStats(){
+  const s = store.get("seekho:streak",{n:0,last:null});
+  const t = store.get("seekho:today",{d:null,n:0});
+  const parts=[];
+  if(s.n) parts.push(`Streak: ${s.n} din`);
+  if(t.d===today()&&t.n) parts.push(`Aaj: ${t.n} cards`);
+  if(library.length) parts.push(`Total seekha: ${library.length}`);
+  if(quizStats.total) parts.push(`Quiz score: ${Math.round(quizStats.right/quizStats.total*100)}%`);
+  $("#stats").textContent = parts.join(". ");
+  $("#testBtn").disabled = library.length < 3;
+  $("#testBtn").title = library.length<3 ? "Pehle kuch cards dekho" : "";
+  const n=$("#note");
+  if(!cfg().key){ n.textContent="Pehle Settings (⚙︎) mein API key daalo."; n.hidden=false; } else n.hidden=true;
+}
+function chipGroup(el,multi){
+  el.addEventListener("click",e=>{
+    const b=e.target.closest(".chip"); if(!b) return;
+    if(multi) b.setAttribute("aria-pressed", b.getAttribute("aria-pressed")!=="true");
+    else el.querySelectorAll(".chip").forEach(c=>c.setAttribute("aria-pressed",c===b));
+    $("#start").disabled = !document.querySelector('#topics [aria-pressed="true"]');
+  });
+}
+chipGroup($("#topics"),true); chipGroup($("#goal"),false);
+const topics = () => [...document.querySelectorAll('#topics [aria-pressed="true"]')].map(b=>b.dataset.v);
+
+/* ---------- settings ---------- */
+const provHelp = {
+  gemini:'Free key: aistudio.google.com pe jao, "Get API key" dabao.',
+  claude:'Key: console.anthropic.com. Paid hai.'
+};
+function fillSettings(){
+  const c=cfg(); $("#prov").value=c.prov; $("#key").value=c.key; $("#model").value=c.model;
+  $("#provHelp").textContent=provHelp[c.prov]; $("#saved").hidden=true;
+}
+$("#prov").onchange=()=>{ const p=$("#prov").value; $("#model").value=DEFAULTS[p]; $("#provHelp").textContent=provHelp[p]; };
+$("#save").onclick=()=>{
+  store.set("seekho:cfg",{prov:$("#prov").value,key:$("#key").value.trim(),model:$("#model").value.trim()||DEFAULTS[$("#prov").value]});
+  $("#saved").hidden=false;
+};
+
+/* ---------- helpers ---------- */
+function el(tag,cls,text){ const e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=text; return e; }
+function loader(text){
+  const s=el("div","slide loading"); s.id="loader";
+  const c=el("div","card"); c.append(el("span","dots",text)); s.append(c);
+  $("#feed").append(s); return s;
+}
+function loaderError(e,retry){
+  const l=$("#loader"); if(!l) return;
+  const c=l.querySelector(".card"); c.textContent="";
+  c.append(el("p",null,errMsg(e)));
+  const row=el("div","row");
+  const b=el("button","ghost","Dobara try karo"); b.onclick=()=>{ l.remove(); retry(); };
+  const s=el("button","ghost","Settings"); s.onclick=()=>{ fillSettings(); go("settings"); };
+  row.append(b,s); c.append(row);
+}
+
+/* ---------- feed ---------- */
+function feedPrompt(){
+  const titles = library.slice(-80).map(x=>x.title).join(" | ") || "koi nahi";
+  return `Tum ek teacher ho jo Pakistani learner ko tech concepts sikhata hai.
+${STYLE}
+
+Topics jin mein se chuno: ${topics().join("; ")}.
+Mix karo. Beginner se intermediate.
+Yeh titles pehle ho chuke, REPEAT mat karo: ${titles}.
+
+5 cards banao aur 1 quiz jo inhi cards mein se kisi ek par ho.
+Card:
+- title: concept naam, English, 2-5 words
+- topic: "Backend", "Networking", "Databases" ya "Tech"
+- body: 2-3 chhote jumle. Kya hai, kyun zaroori.
+- example: 1 jumla. Pakistani daily-life misaal (dhaba, rickshaw, bank ki line) ya real-system example.
+- takeaway: 1 chhota yaad rakhne wala jumla.
+Quiz: q (sawal), options (3), answer (0-2 index), why (1 jumla).
+
+SIRF JSON:
+{"cards":[{"title":"","topic":"","body":"","example":"","takeaway":""}],"quiz":{"q":"","options":["","",""],"answer":0,"why":""}}`;
+}
+
+function reviewPrompt(n, pool){
+  const list = pool.map((c,i)=>`${i+1}. ${c.title}: ${c.body}`).join("\n");
+  return `Learner ne yeh concepts pehle seekhe the:
+${list}
+
+${STYLE}
+In mein se ${n} multiple-choice sawal banao jo samajh check karein, sirf rattaa nahi. Har sawal alag concept par.
+Har sawal: q, options (3), answer (0-2 index), why (1 jumla), title (concept ka naam).
+SIRF JSON: {"quiz":[{"title":"","q":"","options":["","",""],"answer":0,"why":""}]}`;
+}
+
+function pickReview(n){
+  const old = library.slice(0,-5);         // skip the newest few
+  const pool = (old.length>=n?old:library).slice();
+  for(let i=pool.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [pool[i],pool[j]]=[pool[j],pool[i]]; }
+  return pool.slice(0,Math.max(n,6));
+}
+
+async function loadBatch(){
+  if(loading||seen>=goal) return;
+  loading=true;
+  if(!$("#loader")) loader("Cards ban rahe hain");
+  try{
+    const data = await ai(feedPrompt(),true);
+    $("#loader")?.remove();
+    if(seen>=goal||mode!=="feed") return;
+    renderBatch(data);
+    // every 3rd batch: review quiz from older cards
+    if(batchNo%3===0 && library.length>=12){
+      try{
+        const r = await ai(reviewPrompt(1,pickReview(1)),true);
+        if(r.quiz?.[0] && seen<goal) { $("#feed").append(quizSlide(r.quiz[0],true)); observe(); }
+      }catch{}
+    }
+  }catch(e){ loaderError(e,loadBatch); }
+  finally{ loading=false; }
+}
+
+function cardSlide(c,first){
+  const s=el("div","slide"); s.dataset.kind="card";
+  const k=el("div","card");
+  k.append(el("span","tag",c.topic||"Tech"), el("h2",null,c.title), el("p","body",c.body));
+  if(c.example){ const ex=el("p","ex"); ex.append(el("b",null,"Misaal: "),document.createTextNode(c.example)); k.append(ex); }
+  if(c.takeaway) k.append(el("p","take",c.takeaway));
+  const acts=el("div","acts");
+  [["simple","Asaan karo"],["expand","Detail mein"],["example","Aur misaal"],["usecase","Use case"],["ask","Sawal pucho"]]
+    .forEach(([a,label])=>{ const b=el("button","act",label); b.onclick=()=>openSheet(c,a); acts.append(b); });
+  k.append(acts);
+  if(first) k.append(el("p","hint","Upar swipe karo"));
+  s.append(k); return s;
+}
+
+function quizSlide(q,review){
+  const s=el("div","slide"); s.dataset.kind="quiz";
+  const k=el("div","card");
+  k.append(el("span", review?"tag review":"tag", review?`Yaad hai? ${q.title||""}`:"Quiz"), el("h2",null,q.q));
+  const why=el("p","why",q.why||""); why.hidden=true;
+  q.options.forEach((o,i)=>{
+    const b=el("button","opt",o);
+    b.onclick=()=>{
+      k.querySelectorAll(".opt").forEach((x,j)=>{ x.disabled=true; if(j===q.answer) x.classList.add("right"); });
+      if(i!==q.answer) b.classList.add("wrong");
+      why.hidden=false;
+      quizStats.total++; if(i===q.answer) quizStats.right++; store.set("seekho:qs",quizStats);
+      s.dispatchEvent(new CustomEvent("answered",{detail:i===q.answer}));
+    };
+    k.append(b);
+  });
+  k.append(why); s.append(k); return s;
+}
+
+function renderBatch(data){
+  const feed=$("#feed"); batchNo++;
+  (data?.cards||[]).forEach((c,i)=>{
+    feed.append(cardSlide(c,batchNo===1&&i===0));
+    library.push({title:c.title,topic:c.topic,body:c.body,takeaway:c.takeaway,d:today()});
+  });
+  library=library.slice(-400); store.set("seekho:lib",library);
+  if(data?.quiz?.options) feed.append(quizSlide(data.quiz,false));
+  observe();
+}
+
+const io=new IntersectionObserver(es=>{
+  es.forEach(en=>{
+    if(!en.isIntersecting||en.intersectionRatio<.6||mode!=="feed") return;
+    const s=en.target;
+    if(s.dataset.kind==="card"&&!s.dataset.counted){
+      s.dataset.counted="1"; seen++; tick(true);
+      if(seen>=goal){ finish(); return; }
+    }
+    const all=[...$("#feed").children];
+    if(all.length-all.indexOf(s)<=3) loadBatch();
+  });
+},{threshold:[.6]});
+function observe(){ document.querySelectorAll("#feed .slide:not([data-o])").forEach(s=>{ s.dataset.o="1"; io.observe(s); }); }
+
+function tick(count){
+  $("#count").textContent=`${seen}/${goal}`;
+  $("#fill").style.width=Math.min(100,seen/goal*100)+"%";
+  if(count){ const t=store.get("seekho:today",{d:null,n:0}); store.set("seekho:today",{d:today(),n:(t.d===today()?t.n:0)+1}); }
+}
+
+function finish(){
+  const feed=$("#feed");
+  const counted=[...feed.children].filter(s=>s.dataset.counted);
+  let n=counted[counted.length-1].nextElementSibling;
+  if(n&&n.dataset.kind==="quiz") n=n.nextElementSibling;
+  while(n){ const nx=n.nextElementSibling; n.remove(); n=nx; }
+
+  const s=store.get("seekho:streak",{n:0,last:null});
+  if(s.last!==today()){
+    const y=new Date(Date.now()-864e5).toISOString().slice(0,10);
+    s.n = s.last===y ? s.n+1 : 1; s.last=today(); store.set("seekho:streak",s);
+  }
+  const d=el("div","slide"); const k=el("div","card");
+  k.append(el("h2",null,"Aaj ka goal pura."), el("p","body",`${seen} concepts seekhe. Streak: ${s.n} din. Ab phone rakho.`));
+  const row=el("div","row");
+  const more=el("button","ghost","5 aur"); more.onclick=()=>{ goal+=5; d.remove(); tick(false); loadBatch(); };
+  const test=el("button","ghost","Test lo"); test.onclick=()=>{ history.back(); setTimeout(startTest,50); };
+  const home=el("button","ghost","Band karo"); home.onclick=()=>history.back();
+  row.append(more,test,home); k.append(row); d.append(k); feed.append(d);
+}
+
+$("#start").onclick=()=>{
+  if(!cfg().key){ fillSettings(); go("settings"); return; }
+  mode="feed";
+  goal=+document.querySelector('#goal [aria-pressed="true"]').dataset.v;
+  seen=0; batchNo=0; $("#feed").innerHTML=""; $("#feed").scrollTop=0;
+  go("feed"); tick(false); loadBatch();
+};
+
+/* ---------- test mode ---------- */
+async function startTest(){
+  if(!cfg().key){ fillSettings(); go("settings"); return; }
+  if(library.length<3) return;
+  mode="test"; $("#feed").innerHTML=""; $("#feed").scrollTop=0; go("feed");
+  loader("Test ban raha hai");
+  const n=Math.min(5,library.length);
+  try{
+    const r=await ai(reviewPrompt(n,pickReview(n)),true);
+    $("#loader")?.remove();
+    const qs=(r.quiz||[]).filter(q=>q.options);
+    let right=0, done=0;
+    qs.forEach((q,i)=>{
+      const s=quizSlide(q,true);
+      s.querySelector(".tag").textContent=`Sawal ${i+1}/${qs.length}. ${q.title||""}`;
+      s.addEventListener("answered",e=>{
+        done++; if(e.detail) right++;
+        if(done===qs.length) showResult(right,qs.length);
+      });
+      $("#feed").append(s);
+    });
+  }catch(e){ loaderError(e,startTest); }
+}
+function showResult(r,t){
+  const d=el("div","slide"); const k=el("div","card");
+  const pct=Math.round(r/t*100);
+  k.append(el("h2",null,`${r}/${t} sahi`),
+    el("p","body", pct>=80?"Zabardast. Yaad pakki hai.": pct>=50?"Theek hai. Galat walon ko dobara dekho.":"Koi baat nahi. Revision zaroori hai."));
+  const row=el("div","row");
+  const again=el("button","ghost","Naya test"); again.onclick=startTest;
+  const home=el("button","ghost","Wapas"); home.onclick=()=>history.back();
+  row.append(again,home); k.append(row); d.append(k); $("#feed").append(d);
+}
+$("#testBtn").onclick=startTest;
+
+/* ---------- bottom sheet: simplify / expand / example / use case / ask ---------- */
+let sheetCard=null, sheetCtl=0;
+const ACTIONS={
+  simple:{t:"Asaan karo", p:c=>`Is concept ko bilkul asaan bana do, jaise 12 saal ke bache ko samjha rahe ho. Ek desi misaal do. 4-6 jumle.`},
+  expand:{t:"Detail mein", p:c=>`Is concept ko detail mein samjhao: andar se kaise kaam karta hai, kyun aisa design hai, trade-offs kya hain, common galti kya hoti hai. Short paragraphs, 150-250 words. Markdown symbols (#, *) mat use karo.`},
+  example:{t:"Aur misaal", p:c=>`Is concept ki 2 nayi misaalein do: ek Pakistani daily-life wali, ek real software/system wali (agar ho sake to chhota code ya command). Har misaal 2-3 jumle. Markdown symbols (#, *) mat use karo.`},
+  usecase:{t:"Use case", p:c=>`Is concept ke 3 real-world use cases do: kaun si company/system isay kahan use karta hai aur kyun. Phir 1 jumla: kab use NAHI karna chahiye. Markdown symbols (#, *) mat use karo.`},
+  ask:{t:"Sawal pucho", p:null}
+};
+function cardCtx(c){ return `Concept: ${c.title}\nCard pe likha tha: ${c.body}\n${c.takeaway||""}\n\n${STYLE}\n\n`; }
+
+function openSheet(c,a){
+  sheetCard=c;
+  $("#sheetTitle").textContent=ACTIONS[a].t;
+  $("#sheetSub").textContent=c.title;
+  $("#sheetOut").textContent="";
+  $("#scrim").hidden=false; $("#sheet").hidden=false;
+  history.pushState({sheet:1},"");
+  if(a==="ask"){ $("#askIn").focus(); return; }
+  run(cardCtx(c)+ACTIONS[a].p(c));
+}
+async function run(prompt){
+  const id=++sheetCtl;
+  const out=$("#sheetOut"); out.textContent=""; out.append(el("span","dots","Soch raha hoon"));
+  try{
+    const t=await ai(prompt,false);
+    if(id===sheetCtl) out.textContent=t.replace(/\*\*|^#+\s/gm,"");
+  }catch(e){ if(id===sheetCtl) out.textContent=errMsg(e); }
+}
+function closeSheet(fromPop){
+  if($("#sheet").hidden) return;
+  sheetCtl++; $("#scrim").hidden=true; $("#sheet").hidden=true; $("#askIn").value="";
+  if(!fromPop){ ignorePop=true; history.back(); }
+}
+$("#scrim").onclick=()=>closeSheet(false);
+$("#askForm").onsubmit=e=>{
+  e.preventDefault();
+  const q=$("#askIn").value.trim(); if(!q||!sheetCard) return;
+  $("#sheetTitle").textContent="Sawal: "+q; $("#askIn").value="";
+  run(cardCtx(sheetCard)+`Learner ka sawal: "${q}"\nSeedha jawab do, 3-8 jumle. Zaroorat ho to misaal. Markdown symbols (#, *) mat use karo.`);
+};
+
+/* ---------- boot ---------- */
+history.replaceState({p:"home"},"");
+show("home");
+</script>
+</body>
+</html>

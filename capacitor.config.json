@@ -1,0 +1,8 @@
+{
+  "appId": "com.seekho.app",
+  "appName": "Seekho",
+  "webDir": "www",
+  "plugins": {
+    "CapacitorHttp": { "enabled": true }
+  }
+}
